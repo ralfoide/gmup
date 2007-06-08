@@ -78,7 +78,7 @@ def get_params():
     from getpass import getpass
     pw = getpass("Password for %s: " % account)
   
-  return account, password, root_dir
+  return account, pw, root_dir
 
 def connect(name, pw):
   ga = libgmail.GmailAccount(name, pw)
@@ -127,9 +127,9 @@ def main():
   account, password, root_dir = get_params()
   files = get_files(root_dir)
   if files:
-    ga = connect(name, password)
+    ga = connect(account, password)
     if ga:
-      process_files(ga, files)
+      process_files(ga, files, root_dir)
   verbose("Done.")
   
 if __name__ == "__main__":
