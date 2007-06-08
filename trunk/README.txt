@@ -58,9 +58,6 @@ be to use a PicassaWeb account with the GData API. Next time.
 =================
 TODO:
 
-20070608 Fix the broken _get_libgmail.sh (the login line won't work like this)
-20070608 In each email, write the file size and a checksum (to detect changes)
-20070608 Do not upload already uploaded files
 20070608 Do not upload already uploaded files that are identical
 20070608 "Replace" already uploaded files that have changed (remove first)
 20070608 Delete files that are no longer on the client side
@@ -69,5 +66,9 @@ TODO:
 =================
 Done:
 
+20070608 Support multiple source dirs
+20070608 Do not upload already uploaded files
+20070608 In each email, write the file size and a checksum (to detect changes)
+20070608 Fix the broken _get_libgmail.sh (the login line won't work like this)
 20070607 Very simple prototype using libgmail.demos.sendmsg.
 20070607 Look at existing gmail-python libs. Selected libgmail.sf.net.
