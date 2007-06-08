@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# vim: ts=2 sw=2
 #
 # Original:
 # sendmsg.py -- Demo to send a message via Gmail using libgmail
@@ -13,9 +14,13 @@
 #
 import os
 import sys
+import sha
 import logging
 import getopt
+from stat import *
 
+DEBUG = False
+NLIMIT = -1
 VERBOSE = False
 DRY_RUN = False
 
@@ -35,7 +40,7 @@ except ImportError:
 def verbose(msg, *args):
   global VERBOSE
   if VERBOSE:
-    print "\n", msg % args
+    print msg % args
 
 def usage_and_exit():  
   print """
@@ -51,11 +56,13 @@ Options:
 def get_params():
   pw = None
   optlist, args = getopt.gnu_getopt(sys.argv[1:],
-                                    shortopts="p:vnh",
+                                    shortopts="p:vnhdl:",
                                     longopts=["password=",
                                               "verbose",
                                               "dry-run",
-                                              "help"])
+                                              "help",
+																							"debug",
+																							"limit="])
   for o, a in optlist:
     if o in ["-v", "--verbose"]:
       global VERBOSE
@@ -67,6 +74,12 @@ def get_params():
       pw = a
     elif o in ["-h", "--help"]:
       usage_and_exit()
+    elif o in ["-d", "--debug"]:
+      global DEBUG
+      DEBUG = True
+    elif o in ["-l", "--limit"]:
+      global NLIMIT
+      NLIMIT = int(a)
   
   try:
     account = args[0]
@@ -103,23 +116,43 @@ def get_files(initial_dir):
   return result
 
 def process_files(ga, files, root_dir):
-  for file in files:
-    if file.startswith(root_dir):
-      file = file[len(root_dir):]
-    subject = file
+  n = len(files)
+  for i in xrange(n):
+    full = files[i]
+    fname = full
+    if fname.startswith(root_dir):
+      fname = fname[len(root_dir):]
+    if fname.startswith("/"):
+      fname = fname[1:]
+    subject = fname
     to = "%s@gmail.com" % ga.name
-    msg = "\"%s\"" % file
+    size = os.stat(full)[ST_SIZE]
+    f = file(full, "r")
+    s = sha.new(f.read())
+    digest = s.hexdigest()
+    f.close()
+    msg = """
+PATH{%s}
+SIZE{%s}
+SHA{%s}
+""" % (fname, size, digest)
     gmsg = libgmail.GmailComposedMessage(to, subject, msg,
-                                         filenames=[file])
+                                         filenames=[full])
 
-    verbose("Sending '%s'", subject)
-    # Debug
-    verbose("# Gmail Message: %s", repr(gmsg.__dict__))
+    verbose("Sending '%s' (%d of %d, %.2f%%)", subject, i + 1, n, 100.0 * i / n)
+    global DEBUG
+    if DEBUG:
+      verbose("# Gmail Message: %s", repr(gmsg.__dict__))
 
     global DRY_RUN
     if not DRY_RUN:
-      if False: ##ga.sendMessage(gmsg):
+      if ga.sendMessage(gmsg):
         verbose("Message sent `%s` successfully." % subject)
+        global NLIMIT
+        if NLIMIT > 0:
+          NLIMIT -= 1
+          if NLIMIT == 0:
+            sys.exit(0)
       else:
         verbose("Could not send message.")
 
@@ -134,6 +167,5 @@ def main():
   
 if __name__ == "__main__":
   main()
-
 
 
