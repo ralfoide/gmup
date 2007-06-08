@@ -49,6 +49,7 @@ Some alternatives & extensions may/could include:
   and doesn't provide for a rsync-like functionality.
 * Split files too large into several emails.
 * Span over multiple accounts to have more storage.
+* Use email threads for directories, one file per message in the same thread.
 
 Sane people will of course note that to store images a better choice would
 be to use a PicassaWeb account with the GData API. Next time.
